@@ -3,10 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>ตารางเรียน · แผนกวิชาช่างไฟฟ้ากำลัง</title>
-<meta name="description" content="ตารางเรียนและตารางสอน แผนกวิชาช่างไฟฟ้ากำลัง วิทยาลัยเทคนิคปราจีนบุรี">
+<title>ตารางเรียน · แผนกวิชาช่างไฟฟ้า</title>
+<meta name="description" content="ตารางเรียนและตารางสอน แผนกวิชาช่างไฟฟ้า วิทยาลัยเทคนิคปราจีนบุรี">
 <meta name="theme-color" content="#F5F3EE">
-<meta property="og:title" content="ตารางเรียน · แผนกวิชาช่างไฟฟ้ากำลัง">
+<meta property="og:title" content="ตารางเรียน · แผนกวิชาช่างไฟฟ้า">
 <meta property="og:description" content="เลือกระดับชั้น ห้อง และกลุ่ม เพื่อดูตารางเรียน วิทยาลัยเทคนิคปราจีนบุรี">
 <meta property="og:image" content="logo.png">
 <link rel="icon" type="image/png" href="favicon.png">
@@ -255,10 +255,10 @@ body.exporting .list .dname small{display:none}
 <body>
 <header class="top">
   <div class="wrap">
-    <img src="logo.png" alt="ตราแผนกวิชาช่างไฟฟ้ากำลัง">
+    <img src="logo.png" alt="ตราแผนกวิชาช่างไฟฟ้า">
     <div class="brand">
       <h1>ตารางเรียน · ตารางสอน</h1>
-      <p>แผนกวิชาช่างไฟฟ้ากำลัง วิทยาลัยเทคนิคปราจีนบุรี<span class="hide-m"> · ภาคเรียนที่ <span id="term"></span></span></p>
+      <p>แผนกวิชาช่างไฟฟ้า วิทยาลัยเทคนิคปราจีนบุรี<span class="hide-m"> · ภาคเรียนที่ <span id="term"></span></span></p>
     </div>
     <div class="seg" role="group" aria-label="โหมด">
       <button id="mStudent" aria-pressed="true">นักเรียน</button>
@@ -550,7 +550,7 @@ function update(scroll){
   <article class="sheet" id="sheet">
     <div class="shead"><img src="logo.png" alt=""><div class="stitle">${head}</div><div class="smeta">${sub}</div></div>
     ${body}
-    <div class="sfoot">${cats.map(k=>`<span class="lg"><i style="background:${CATCOLOR[k]}"></i>${CATNAME[k]}</span>`).join('')}<span class="credit">แผนกวิชาช่างไฟฟ้ากำลัง · วิทยาลัยเทคนิคปราจีนบุรี</span></div>
+    <div class="sfoot">${cats.map(k=>`<span class="lg"><i style="background:${CATCOLOR[k]}"></i>${CATNAME[k]}</span>`).join('')}<span class="credit">แผนกวิชาช่างไฟฟ้า · วิทยาลัยเทคนิคปราจีนบุรี</span></div>
   </article>
   ${ctx.kind==='class'?subjTable(ctx.c):teacherTable(ITEMS)}`;
   out.querySelectorAll('[data-view]').forEach(b=>b.onclick=()=>{st.view=b.dataset.view; store.set('tt.view',st.view); update();});

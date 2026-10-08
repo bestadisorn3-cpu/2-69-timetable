@@ -105,7 +105,7 @@ for ws in wb.worksheets[1:]:
     classes.append(dict(id=cid,level=level+'.',year=year,room=room,group=group,students=students,tags=tags,advisor=advisor,lunch=lunch-3,subjects=[subj[k] for k in order],sessions=sessions))
 for i in issues: print(i)
 mx=max(max(p for se in c['sessions'] for p in se['p']) for c in classes); print('max period',mx)
-data=dict(term='2/2569',college='วิทยาลัยเทคนิคปราจีนบุรี',dept='แผนกวิชาช่างไฟฟ้ากำลัง',classes=classes)
+data=dict(term='2/2569',college='วิทยาลัยเทคนิคปราจีนบุรี',dept='แผนกวิชาช่างไฟฟ้า',classes=classes)
 open(sys.argv[2],'w').write('window.TT='+json.dumps(data,ensure_ascii=False,separators=(',',':'))+';\n')
 print(len(classes),'classes')
 teachers=sorted({t for c in classes for se in c['sessions'] for t in se['t']}); print(len(teachers),teachers)
