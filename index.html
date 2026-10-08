@@ -203,6 +203,7 @@ body.exporting .blk:hover{transform:none;box-shadow:none}
 body.exporting .blk.live,body.exporting .row.live{box-shadow:none}
 body.exporting .blk.live::after,body.exporting .tt .dl.today::after{display:none}
 body.exporting .tt .dl.today{color:var(--ink)}
+body.exporting .tt.c .dl.today span{background:none;color:inherit;padding:0}
 body.exporting .list .dname small{display:none}
 
 /* ---------- responsive ---------- */
@@ -615,29 +616,50 @@ async function copyLink(){
   try{ if(navigator.share && isPhone()){ await navigator.share({title:document.title,url}); return; } await navigator.clipboard.writeText(url); toast('คัดลอกลิงก์แล้ว'); }
   catch(e){ if(e&&e.name==='AbortError') return; prompt('คัดลอกลิงก์นี้',url); }
 }
+let saving=false;
 async function saveImage(name){
-  const btn=$('#bSave'); if(typeof html2canvas!=='function'){ toast('กำลังโหลด ลองอีกครั้ง'); return; }
-  btn.disabled=true; document.body.classList.add('exporting');
+  const btn=$('#bSave'); if(saving) return;
+  if(typeof html2canvas!=='function'){ toast('กำลังโหลด ลองอีกครั้ง'); return; }
+  saving=true; btn.disabled=true; const label=btn.innerHTML; btn.lastChild.textContent='กำลังสร้างรูป…';
   try{
     await document.fonts.ready;
     const el=$('#sheet');
     const cs=getComputedStyle(el), tt=el.querySelector('.tt');
     const w=Math.ceil(Math.max(el.getBoundingClientRect().width, tt? tt.scrollWidth+parseFloat(cs.paddingLeft)+parseFloat(cs.paddingRight)+12:0));
-    const canvas=await html2canvas(el,{scale:Math.min(3,Math.max(2,window.devicePixelRatio||2)),backgroundColor:'#F5F3EE',useCORS:true,windowWidth:Math.max(document.documentElement.clientWidth,w+40),width:w,onclone:(doc)=>{const s=doc.getElementById('sheet'); s.style.width=w+'px'; s.style.margin='0';}});
-    // add paper margin
+    const phone=isPhone();
+    // จำกัดขนาดภาพบนมือถือ (กันหน่วยความจำเต็มบน iPhone/Android)
+    const scale=phone?Math.min(2, 2400/w):Math.min(3,Math.max(2,window.devicePixelRatio||2));
+    const canvas=await html2canvas(el,{scale,backgroundColor:'#F5F3EE',useCORS:true,logging:false,
+      windowWidth:Math.max(document.documentElement.clientWidth,w+40),width:w,scrollX:0,scrollY:-window.scrollY,
+      onclone:(doc)=>{doc.body.classList.add('exporting'); const s=doc.getElementById('sheet'); s.style.width=w+'px'; s.style.margin='0';}});
     const pad=Math.round(canvas.width*0.04), out=document.createElement('canvas');
     out.width=canvas.width+pad*2; out.height=canvas.height+pad*2;
     const g=out.getContext('2d'); g.fillStyle='#F5F3EE'; g.fillRect(0,0,out.width,out.height); g.drawImage(canvas,pad,pad);
-    const blob=await new Promise(r=>out.toBlob(r,'image/png'));
-    const file=new File([blob],name+'.png',{type:'image/png'});
-    if(isPhone() && navigator.canShare && navigator.canShare({files:[file]})){
-      try{ await navigator.share({files:[file],title:name}); }catch(e){}
-    }else{
-      const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=name+'.png'; document.body.appendChild(a); a.click(); setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},1000);
-      toast('บันทึกรูปภาพแล้ว');
-    }
-  }catch(e){ console.error(e); toast('บันทึกไม่สำเร็จ ลองแคปหน้าจอแทน'); }
-  finally{ document.body.classList.remove('exporting'); btn.disabled=false; }
+    const blob=await new Promise((res,rej)=>out.toBlob(b=>b?res(b):rej(new Error('toBlob')),'image/png'));
+    if(phone) showImagePreview(blob,name,out.toDataURL('image/png'));
+    else { downloadBlob(blob,name+'.png'); toast('บันทึกรูปภาพแล้ว'); }
+  }catch(e){ console.error(e); toast('สร้างรูปไม่สำเร็จ ลองแคปหน้าจอแทน'); }
+  finally{ saving=false; btn.disabled=false; btn.innerHTML=label; }
+}
+function downloadBlob(blob,fn){
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=fn; document.body.appendChild(a); a.click();
+  setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},4000);
+}
+// มือถือ: แสดงรูปให้กดค้างบันทึก / แชร์ (ปุ่มแชร์ต้องกดเองเพื่อให้เบราว์เซอร์อนุญาต)
+function showImagePreview(blob,name,dataUrl){
+  const file=new File([blob],name+'.png',{type:'image/png'});
+  const canShare=!!(navigator.canShare && navigator.canShare({files:[file]}));
+  $('#dlgBody').innerHTML=`<h4 style="margin-bottom:6px">บันทึกรูปตาราง</h4>
+    <div style="font-size:13px;color:var(--muted);margin-bottom:12px">กดค้างที่รูป แล้วเลือก “บันทึกรูปภาพ” หรือ “เพิ่มไปยังรูปภาพ”</div>
+    <img src="${dataUrl}" alt="ตาราง" style="display:block;width:100%;max-height:58vh;object-fit:contain;border-radius:10px;border:1px solid var(--line);background:#F5F3EE;-webkit-touch-callout:default">
+    <div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap">
+      ${canShare?'<button class="btn primary" id="pvShare" style="flex:1;justify-content:center">แชร์ / บันทึกลงเครื่อง</button>':''}
+      <button class="btn${canShare?'':' primary'}" id="pvDl" style="flex:1;justify-content:center">ดาวน์โหลดไฟล์</button>
+    </div>
+    <button class="btn close" onclick="this.closest('dialog').close()">ปิด</button>`;
+  const d=$('#dlg'); if(d.showModal) d.showModal(); else d.setAttribute('open','');
+  const sh=$('#pvShare'); if(sh) sh.onclick=async()=>{ try{ await navigator.share({files:[file],title:name}); }catch(e){ if(e&&e.name!=='AbortError') toast('แชร์ไม่ได้ ลองกดค้างที่รูปแทน'); } };
+  $('#pvDl').onclick=()=>{ downloadBlob(blob,name+'.png'); };
 }
 
 // ---------- init ----------
@@ -649,7 +671,7 @@ $('#mStudent').setAttribute('aria-pressed',st.mode==='student'); $('#mTeacher').
 update();
 window.addEventListener('hashchange',()=>{ if(setFromHash()) { $('#mStudent').setAttribute('aria-pressed',st.mode==='student'); $('#mTeacher').setAttribute('aria-pressed',st.mode==='teacher'); update(); } });
 let lastPhone=isPhone(); window.addEventListener('resize',()=>{ if(isPhone()!==lastPhone){ lastPhone=isPhone(); update(); } });
-setInterval(()=>{ if(!document.querySelector('dialog[open]') && document.activeElement?.id!=='tq') update(); },60000);
+setInterval(()=>{ if(!saving && !document.querySelector('dialog[open]') && document.activeElement?.id!=='tq') update(); },60000);
 })();
 </script>
 </body>
