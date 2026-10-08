@@ -20,14 +20,14 @@
   --core-bg:#EEF1F9; --core-bd:#2E4391; --core-tx:#1D2E6E;
   --voc-bg:#FAF4E6; --voc-bd:#B98A2A; --voc-tx:#6B4E12;
   --act-bg:#EDF4EF; --act-bd:#4F8462; --act-tx:#2C5139;
-  --serif:"Noto Serif Thai",Georgia,serif;
+  --serif:var(--sans);
   --sans:"IBM Plex Sans Thai",system-ui,-apple-system,"Segoe UI",sans-serif;
-  --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+  --mono:var(--sans);
   --r:14px;
 }
 *{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%}
-body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.55;-webkit-font-smoothing:antialiased}
+body{margin:0;font-variant-numeric:tabular-nums;background:var(--paper);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.55;-webkit-font-smoothing:antialiased}
 button{font:inherit;color:inherit;cursor:pointer}
 .wrap{max-width:1240px;margin:0 auto;padding:0 16px}
 
@@ -53,7 +53,7 @@ button{font:inherit;color:inherit;cursor:pointer}
 .chip small{font-size:10.5px;color:var(--muted);line-height:1.2}
 .chip[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:#fff}
 .chip[aria-pressed="true"] small{color:#C9CBD2}
-.chip.num{font-family:var(--mono);font-weight:500;min-width:52px}
+.chip.num{font-weight:500;min-width:52px}
 .search{width:100%;max-width:340px;border:1px solid var(--line);border-radius:10px;padding:8px 12px;font:inherit;background:#FBFAF7;margin-bottom:10px;outline:none}
 .search:focus{border-color:var(--ink2)}
 .summary{display:none;align-items:center;gap:12px;padding:12px 0}
@@ -88,7 +88,7 @@ button{font:inherit;color:inherit;cursor:pointer}
 .shead img{width:54px;height:54px;flex:none}
 .stitle{flex:1;min-width:0}
 .eyebrow{font-size:12px;color:var(--muted);letter-spacing:.02em}
-.stitle h2{font-family:var(--serif);font-weight:700;font-size:30px;line-height:1.2;margin:2px 0 0;letter-spacing:.005em}
+.stitle h2{font-family:var(--serif);font-weight:600;font-size:30px;line-height:1.2;margin:2px 0 0;letter-spacing:-.005em}
 .stitle h2 em{font-style:normal;font-weight:500;color:var(--gold);font-size:.72em;margin-left:6px}
 .tags{display:inline-flex;gap:6px;margin-left:8px;vertical-align:middle}
 .tag{font-family:var(--sans);font-size:11px;font-weight:500;border:1px solid var(--line);color:var(--ink2);border-radius:999px;padding:1px 8px;letter-spacing:0}
@@ -104,13 +104,14 @@ button{font:inherit;color:inherit;cursor:pointer}
 .tt{display:grid;position:relative}
 .tt .hd{font-size:11.5px;color:var(--muted);display:flex;flex-direction:column;justify-content:center;align-items:center;line-height:1.25;padding:4px 0 8px}
 .tt .hd b{font-family:var(--mono);font-weight:500;color:var(--ink);font-size:13px}
-.tt .hd span{font-family:var(--mono);font-size:10.5px}
+.tt .hd span{font-size:10.5px;line-height:1.3}
+.tt .hd.corner{align-items:flex-start;padding-left:2px;color:var(--faint);font-size:10.5px}
 .tt .dl{display:flex;align-items:center;gap:8px;font-weight:500;font-size:14px;color:var(--ink)}
 .tt .dl i{width:7px;height:7px;border-radius:50%;flex:none}
 .tt .dl.today{color:var(--navy)}
 .tt .dl.today::after{content:"วันนี้";font-size:10px;font-weight:500;background:var(--navy);color:#fff;border-radius:999px;padding:0 7px;line-height:17px}
 .tt .cell{border-top:1px solid var(--line2);border-left:1px dashed var(--line2)}
-.tt .lunch{background:repeating-linear-gradient(135deg,#FAF9F6 0 6px,#F3F1EC 6px 7px);border-radius:8px;display:flex;align-items:center;justify-content:center;color:var(--faint);font-size:11px;text-align:center;line-height:1.3}
+.tt .lunch{flex-direction:column;gap:0;margin:4px 3px;background:repeating-linear-gradient(135deg,#FAF9F6 0 6px,#F3F1EC 6px 7px);border-radius:8px;display:flex;align-items:center;justify-content:center;color:var(--faint);font-size:11px;text-align:center;line-height:1.3}
 .blk{margin:3px;border-radius:10px;padding:8px 10px;position:relative;overflow:hidden;cursor:pointer;display:flex;flex-direction:column;gap:2px;min-height:0;border:0;text-align:left;font:inherit;transition:transform .12s, box-shadow .12s}
 .blk:hover{transform:translateY(-1px);box-shadow:0 6px 16px -10px rgba(0,0,0,.35)}
 .blk::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px}
@@ -125,18 +126,20 @@ button{font:inherit;color:inherit;cursor:pointer}
 .blk.live::after{content:"กำลังเรียน";position:absolute;right:6px;top:6px;font-size:9.5px;background:var(--ink);color:#fff;border-radius:999px;padding:0 6px;line-height:16px}
 .blk .cont{font-size:10px;opacity:.7}
 
-/* vertical (phone) orientation */
-.tt.v .hd{padding:6px 0}
-.tt.v .dl{flex-direction:column;gap:3px;font-size:12.5px;padding:2px 0 8px;justify-content:center}
-.tt.v .dl.today::after{font-size:9px;padding:0 5px;line-height:15px}
-.tt.v .cell{border-left:1px solid var(--line2);border-top:1px dashed var(--line2)}
-.tt.v .blk{margin:1.5px;padding:6px 4px 4px 5px;border-radius:7px}
-.tt.v .blk::before{left:0;right:0;top:0;bottom:auto;height:3px;width:auto}
-.tt.v .blk .nm{font-size:10.5px;line-height:1.32;max-height:none;word-break:normal;overflow-wrap:break-word;letter-spacing:-.01em}
-.tt.v .blk .cd{display:none}
-.tt.v .blk .mt{font-size:10px;gap:0;flex-direction:column}
-.tt.v .blk .mt .tc{display:none}
-.tt.v .blk.live::after{display:none}
+/* compact (phone) */
+.tt.c .dl{font-size:12px;gap:5px}
+.tt.c .dl i{width:6px;height:6px}
+.tt.c .dl.today::after{display:none}
+.tt.c .dl.today span{background:var(--navy);color:#fff;border-radius:6px;padding:0 5px}
+.tt.c .hd b{font-size:12px}
+.tt.c .hd span{font-size:9.5px}
+.tt.c .blk{margin:2px;padding:6px 7px;border-radius:8px}
+.tt.c .blk .cd{display:none}
+.tt.c .blk .nm{font-size:11px;line-height:1.3;max-height:3.9em}
+.tt.c .blk .mt{font-size:10px;gap:0 5px}
+.tt.c .blk.live::after{display:none}
+.hint{font-size:11.5px;color:var(--muted);text-align:center;padding:8px 4px 0}
+body.exporting .hint{display:none}
 
 /* ---------- list ---------- */
 .list .day{display:grid;grid-template-columns:96px 1fr;gap:14px;padding:12px 0;border-top:1px solid var(--line2)}
@@ -434,10 +437,9 @@ function nowInfo(){
 }
 
 // ---------- grid ----------
-function renderGrid(items,{vertical,lunch,today,now}){
+function renderGrid(items,{compact,lunch,today,now}){
   let maxP=9; items.forEach(it=>it.p.forEach(p=>{if(p>maxP) maxP=p}));
   const P=[]; for(let i=1;i<=maxP;i++) P.push(i);
-  // lanes per day
   const parts=[]; const lanes=[1,1,1,1,1];
   for(let d=0;d<5;d++){
     const ps=[]; items.filter(it=>it.d===d).forEach(it=>runs(it.p).forEach((r,ri)=>ps.push({it,r,ri})));
@@ -448,41 +450,29 @@ function renderGrid(items,{vertical,lunch,today,now}){
   }
   const dStart=[]; let acc=2; for(let d=0;d<5;d++){dStart[d]=acc; acc+=lanes[d];}
   const pIdx=Object.fromEntries(P.map((p,i)=>[p,i+2]));
-  let h='', style;
-  if(!vertical){
-    const cols=['76px',...P.map(p=>p===lunch?'40px':'minmax(84px,1fr)')].join(' ');
-    const rows=['auto',...lanes.flatMap(l=>Array(l).fill(l>1?'minmax(64px,auto)':'minmax(84px,auto)'))].join(' ');
-    style=`grid-template-columns:${cols};grid-template-rows:${rows};min-width:${76+P.reduce((a,p)=>a+(p===lunch?40:96),0)}px`;
-    P.forEach(p=>{ if(p!==lunch) h+=`<div class="hd" style="grid-column:${pIdx[p]};grid-row:1"><b>${p}</b><span>${hm(pStart(p))}</span></div>`; });
-    for(let d=0;d<5;d++){
-      h+=`<div class="dl${d===today?' today':''}" style="grid-column:1;grid-row:${dStart[d]}/span ${lanes[d]}"><i style="background:${DCOLOR[d]}"></i>${DAYS[d]}</div>`;
-      P.forEach(p=>{ if(p!==lunch) h+=`<div class="cell" style="grid-column:${pIdx[p]};grid-row:${dStart[d]}/span ${lanes[d]}"></div>`; });
-    }
-    if(lunch) h+=`<div class="lunch" style="grid-column:${pIdx[lunch]};grid-row:1/span ${acc-1};margin:4px 3px">พัก</div>`;
-  }else{
-    const cols=['40px',...lanes.flatMap(l=>Array(l).fill('minmax(0,1fr)'))].join(' ');
-    const rows=['auto',...P.map(p=>p===lunch?'30px':'minmax(58px,auto)')].join(' ');
-    style=`grid-template-columns:${cols};grid-template-rows:${rows}`;
-    for(let d=0;d<5;d++){
-      h+=`<div class="dl${d===today?' today':''}" style="grid-row:1;grid-column:${dStart[d]}/span ${lanes[d]}"><i style="background:${DCOLOR[d]}"></i>${DAYS[d]}</div>`;
-      P.forEach(p=>{ if(p!==lunch) h+=`<div class="cell" style="grid-row:${pIdx[p]};grid-column:${dStart[d]}/span ${lanes[d]}"></div>`; });
-    }
-    P.forEach(p=>{ if(p!==lunch) h+=`<div class="hd" style="grid-row:${pIdx[p]};grid-column:1"><b>${p}</b><span>${hm(pStart(p))}</span></div>`; });
-    if(lunch) h+=`<div class="lunch" style="grid-row:${pIdx[lunch]};grid-column:1/span ${acc-1};margin:3px 0">พักกลางวัน ${hm(pStart(lunch))}–${hm(pEnd(lunch))}</div>`;
+  const DW=compact?62:84, PW=compact?78:96, LW=compact?28:40, RH=compact?70:84;
+  const cols=[DW+'px',...P.map(p=>p===lunch?LW+'px':`minmax(${PW-12}px,1fr)`)].join(' ');
+  const rows=['auto',...lanes.flatMap(l=>Array(l).fill(`minmax(${l>1?RH-16:RH}px,auto)`))].join(' ');
+  const style=`grid-template-columns:${cols};grid-template-rows:${rows};min-width:${DW+P.reduce((a,p)=>a+(p===lunch?LW:PW),0)}px`;
+  let h=`<div class="hd corner" style="grid-column:1;grid-row:1"><span>คาบ</span><span>เวลา</span></div>`;
+  P.forEach(p=>{ if(p!==lunch) h+=`<div class="hd" style="grid-column:${pIdx[p]};grid-row:1"><b>${p}</b><span>${hm(pStart(p))}</span><span>${hm(pEnd(p))}</span></div>`; });
+  for(let d=0;d<5;d++){
+    h+=`<div class="dl${d===today?' today':''}" style="grid-column:1;grid-row:${dStart[d]}/span ${lanes[d]}"><i style="background:${DCOLOR[d]}"></i><span>${DAYS[d]}</span></div>`;
+    P.forEach(p=>{ if(p!==lunch) h+=`<div class="cell" style="grid-column:${pIdx[p]};grid-row:${dStart[d]}/span ${lanes[d]}"></div>`; });
   }
-  parts.forEach((x,i)=>{
+  if(lunch) h+=`<div class="lunch" style="grid-column:${pIdx[lunch]};grid-row:1/span ${acc-1}">พัก</div>`;
+  parts.forEach(x=>{
     const it=x.it, r=x.r, a=pIdx[r[0]], span=r.length;
     const live = now.wd===x.d && now.period && r.includes(now.period);
-    const nm = vertical ? (it.short && it.short.length<it.name.length ? it.short : it.name) : it.name;
-    const pos = vertical ? `grid-column:${dStart[x.d]+x.lane};grid-row:${a}/span ${span}` : `grid-row:${dStart[x.d]+x.lane};grid-column:${a}/span ${span}`;
+    const nm = compact && span<=2 && it.short && it.short.length<it.name.length ? it.short : it.name;
     const idx=items.indexOf(it);
-    h+=`<button class="blk ${it.cat}${live?' live':''}" style="${pos}" data-i="${idx}">
+    h+=`<button class="blk ${it.cat}${live?' live':''}" style="grid-row:${dStart[x.d]+x.lane};grid-column:${a}/span ${span}" data-i="${idx}">
       <span class="cd">${esc(it.code)}${x.ri>0?' <span class="cont">(ต่อ)</span>':''}</span>
       <span class="nm">${esc(nm)}</span>
       <span class="mt"><span class="rm">${esc(roomTxt(it.rooms))}</span><span class="tc">${esc(it.who.join(', '))}</span></span>
     </button>`;
   });
-  return `<div class="tt${vertical?' v':''}" style="${style}">${h}</div>`;
+  return `<div class="tt${compact?' c':''}" style="${style}">${h}</div>`;
 }
 
 // ---------- list ----------
@@ -522,7 +512,7 @@ function update(scroll){
   }
   ITEMS=ctx.items;
   const view = st.view || (isPhone()?'grid':'grid');
-  const vertical=isPhone();
+  const compact=isPhone();
   // now bar
   const live=ITEMS.filter(it=>it.d===n.wd && n.period && it.p.includes(n.period));
   const upcoming=ITEMS.filter(it=>it.d===n.wd && Math.min(...it.p)>(n.period||0) && pStart(Math.min(...it.p))>n.mins).sort((a,b)=>Math.min(...a.p)-Math.min(...b.p))[0];
@@ -544,7 +534,7 @@ function update(scroll){
     head=`<div class="eyebrow">ตารางสอน · ภาคเรียนที่ ${esc(T.term)}</div><h2>${esc(ctx.t)}</h2>`;
     sub=`<div>สอน <b>${totalP}</b> คาบ/สัปดาห์</div><div><b>${nCls}</b> ห้อง/กลุ่ม · ${new Set(ITEMS.map(i=>i.code)).size} รายวิชา</div>`;
   }
-  const body = view==='list' ? renderList(ITEMS,{today:n.wd,now:n}) : `<div class="gridwrap">${renderGrid(ITEMS,{vertical,lunch:ctx.lunch,today:n.wd,now:n})}</div>`;
+  const body = view==='list' ? renderList(ITEMS,{today:n.wd,now:n}) : `<div class="gridwrap">${renderGrid(ITEMS,{compact,lunch:ctx.lunch,today:n.wd,now:n})}</div>${compact?'<div class="hint">เลื่อนตารางไปทางขวา หรือหมุนจอแนวนอนเพื่อดูครบ · กด “บันทึกเป็นรูปภาพ” ได้ตารางเต็ม</div>':''}`;
   const cats=[...new Set(ITEMS.map(i=>i.cat))];
   const fname = ctx.kind==='class' ? `ตารางเรียน-${ctx.c.level}${ctx.c.year}-${ctx.c.room}${ctx.c.group?'-กลุ่ม'+ctx.c.group:''}` : `ตารางสอน-${ctx.t}`;
   out.innerHTML=`
@@ -610,7 +600,8 @@ async function saveImage(name){
   try{
     await document.fonts.ready;
     const el=$('#sheet');
-    const w=Math.max(el.scrollWidth, el.querySelector('.tt')?el.querySelector('.tt').scrollWidth+ (isPhone()?20:52):0);
+    const cs=getComputedStyle(el), tt=el.querySelector('.tt');
+    const w=Math.ceil(Math.max(el.getBoundingClientRect().width, tt? tt.scrollWidth+parseFloat(cs.paddingLeft)+parseFloat(cs.paddingRight)+12:0));
     const canvas=await html2canvas(el,{scale:Math.min(3,Math.max(2,window.devicePixelRatio||2)),backgroundColor:'#F5F3EE',useCORS:true,windowWidth:Math.max(document.documentElement.clientWidth,w+40),width:w,onclone:(doc)=>{const s=doc.getElementById('sheet'); s.style.width=w+'px'; s.style.margin='0';}});
     // add paper margin
     const pad=Math.round(canvas.width*0.04), out=document.createElement('canvas');
