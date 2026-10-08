@@ -106,7 +106,7 @@ button{font:inherit;color:inherit;cursor:pointer}
 .tt .hd b{font-family:var(--mono);font-weight:500;color:var(--ink);font-size:13px}
 .tt .hd span{font-size:10.5px;line-height:1.3}
 .tt .hd.corner{align-items:flex-start;padding-left:2px;color:var(--faint);font-size:10.5px}
-.tt .dl{display:flex;align-items:center;gap:8px;font-weight:500;font-size:14px;color:var(--ink)}
+.tt .dl{display:flex;flex-wrap:wrap;align-content:center;align-items:center;gap:4px 8px;font-weight:500;font-size:14px;color:var(--ink)}
 .tt .dl i{width:7px;height:7px;border-radius:50%;flex:none}
 .tt .dl.today{color:var(--navy)}
 .tt .dl.today::after{content:"วันนี้";font-size:10px;font-weight:500;background:var(--navy);color:#fff;border-radius:999px;padding:0 7px;line-height:17px}
@@ -302,12 +302,15 @@ const clsLabel=c=>`${c.level} ${c.year}/${c.room}`+(c.group?` กลุ่ม ${
 const clsShort=c=>`${c.level}${c.year}/${c.room}`+(c.group?` ก.${c.group}`:'');
 
 // teacher index
-const teachers={};
+// รายชื่อครูของแผนก (จากไฟล์ตารางสอนรายบุคคล) — คนอื่นไม่แสดง
+const teachers={}, tExtra={}, tFull={};
+for(const t of (T.teachers||[])){ teachers[t.k]=[]; tExtra[t.k]=t.x||[]; tFull[t.k]=t.full; }
 for(const c of classes) for(const s of c.sessions) for(const t of s.t){
-  (teachers[t]=teachers[t]||[]).push({s,c});
+  if(teachers[t]) teachers[t].push({s,c});
 }
+const rank=n=>n.startsWith('ฝึกสอน')?2:n.startsWith('ครูใหม่')?1:0;
 const tNames=Object.keys(teachers).sort((a,b)=>{
-  const na=a.startsWith('ครูใหม่'),nb=b.startsWith('ครูใหม่'); if(na!==nb) return na?1:-1;
+  const na=rank(a),nb=rank(b); if(na!==nb) return na-nb;
   return a.replace(/^อ\./,'').localeCompare(b.replace(/^อ\./,''),'th');
 });
 
@@ -418,6 +421,10 @@ function teacherItems(t){
   }
   const arr=[...m.values()];
   arr.forEach(it=>{ it.who=[groupLabel(it.cls)]; it.ctx=it.who[0]; });
+  for(const x of (tExtra[t]||[])){
+    const lab=x.l.replace(/^ช\./,'ปวช.').replace(/^ส\./,'ปวส.').replace(/\(ทวิ\)/,'').trim();
+    arr.push({d:x.d,p:x.p,code:x.c,cat:cat(x.c),name:x.n,short:x.n,rooms:x.r,who:[lab],cls:[],ctx:lab,lunch:null});
+  }
   return arr;
 }
 function groupLabel(cs){
@@ -530,8 +537,8 @@ function update(scroll){
     sub=`<div>ครูที่ปรึกษา <b>${esc(c.advisor||'—')}</b></div><div>นักเรียน <b>${c.students??'—'}</b> คน · สาขาวิชาช่างไฟฟ้า</div>`;
   }else{
     const totalP=ITEMS.reduce((a,it)=>a+it.p.length,0);
-    const nCls=new Set(ITEMS.flatMap(it=>it.cls.map(c=>c.id))).size;
-    head=`<div class="eyebrow">ตารางสอน · ภาคเรียนที่ ${esc(T.term)}</div><h2>${esc(ctx.t)}</h2>`;
+    const nCls=new Set(ITEMS.flatMap(it=>it.cls.length?it.cls.map(c=>c.id):[it.ctx])).size;
+    head=`<div class="eyebrow">ตารางสอน · ภาคเรียนที่ ${esc(T.term)}${tFull[ctx.t]&&!/^ครูใหม่/.test(tFull[ctx.t])?' · '+esc(tFull[ctx.t]):''}</div><h2>${esc(ctx.t)}</h2>`;
     sub=`<div>สอน <b>${totalP}</b> คาบ/สัปดาห์</div><div><b>${nCls}</b> ห้อง/กลุ่ม · ${new Set(ITEMS.map(i=>i.code)).size} รายวิชา</div>`;
   }
   const body = view==='list' ? renderList(ITEMS,{today:n.wd,now:n}) : `<div class="gridwrap">${renderGrid(ITEMS,{compact,lunch:ctx.lunch,today:n.wd,now:n})}</div>${compact?'<div class="hint">เลื่อนตารางไปทางขวา หรือหมุนจอแนวนอนเพื่อดูครบ · กด “บันทึกเป็นรูปภาพ” ได้ตารางเต็ม</div>':''}`;
