@@ -4,6 +4,7 @@ CODE=re.compile(r'^\d{5}-\d{4}$')
 def s(v): return '' if v is None else re.sub(r'\s+',' ',str(v)).strip()
 TFIX={'อ.ธนณีย์':'อ.ธนนีย์','ครูใหม่ 1':'อ.สุพัชชา'}
 AFIX={'ครูใหม่ 1':'อ.สุพัชชา พลอยหวาน'}  # ชื่อครูที่ปรึกษา
+ADVISOR_BLANK={'v2-2','v2-4'}  # ห้องที่ยังไม่ระบุครูที่ปรึกษา
 RFIX={'ทฐ2':'ทฐ 2','สปก':'สปก.'}
 # ห้องที่ไม่มีใน Excel (ยืนยันโดยครู): (id ห้อง, วัน 0=จ.., รหัสวิชา) -> ห้อง
 ROOM_OVERRIDE={('v1-5',1,'20000-1102'):'741',('v1-5',4,'20104-2013'):'825'}
@@ -103,6 +104,7 @@ for ws in wb.worksheets[1:]:
     for se in sessions:
       k=(cid,se['d'],se['c'])
       if k in ROOM_OVERRIDE and not se['r']: se['r']=[ROOM_OVERRIDE[k]]
+    if cid in ADVISOR_BLANK: advisor=''
     classes.append(dict(id=cid,level=level+'.',year=year,room=room,group=group,students=students,tags=tags,advisor=advisor,lunch=lunch-3,subjects=[subj[k] for k in order],sessions=sessions))
 for i in issues: print(i)
 mx=max(max(p for se in c['sessions'] for p in se['p']) for c in classes); print('max period',mx)
