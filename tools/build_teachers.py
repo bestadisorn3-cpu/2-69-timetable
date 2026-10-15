@@ -6,18 +6,20 @@ s=lambda v:'' if v is None else re.sub(r'\s+',' ',str(v)).strip()
 wb=openpyxl.load_workbook(sys.argv[1]); out=sys.argv[2]
 src=open(out).read(); T=json.loads(src[src.index('{'):src.rindex('}')+1])
 SKIP={'ตรวจสอบยอดนักเรียน'}
+RENAME={'ครูใหม่ 1':'อ.สุพัชชา'}  # ชื่อชีตเดิม -> ชื่อที่ใช้บนเว็บ
 # คาบที่เพิ่มเอง (ไม่มีในไฟล์ Excel) — d: 0=จ. 1=อ. 2=พ. 3=พฤ. 4=ศ.
 MANUAL={'อ.ชนานาถ':[dict(d=3,c='20100-1005',p=[6,7,8,9],r=['845'],n='งานไฟฟ้าและอิเล็กทรอนิกส์เบื้องต้น',l='ชย.1/1')]}
 teachers=[];log=[]
 for ws in wb.worksheets:
   if ws.title in SKIP: continue
   key=ws.title.strip(); full=s(ws['P7'].value)
+  if key in RENAME: key=RENAME[key]; full=''
   if key=='ฝึกสอน': key='ฝึกสอน ('+re.sub(r'^(นาย|นางสาว|นาง)','',full).split(' ')[0]+')'
   subj={}
   for r in range(12,25):
     c=s(ws.cell(r,15).value)
     if CODE.match(c): subj[c]=s(ws.cell(r,16).value)
-  mine=[(se['d'],se['c'],set(se['p'])) for c in T['classes'] for se in c['sessions'] if ws.title.strip() in se['t']]
+  mine=[(se['d'],se['c'],set(se['p'])) for c in T['classes'] for se in c['sessions'] if key in se['t']]
   extra=[]
   for d in range(5):
     dr=6+4*d; cell=lambda rr,c: s(ws.cell(rr,c).value)
