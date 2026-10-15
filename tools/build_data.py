@@ -3,6 +3,7 @@ wb=openpyxl.load_workbook(sys.argv[1])
 CODE=re.compile(r'^\d{5}-\d{4}$')
 def s(v): return '' if v is None else re.sub(r'\s+',' ',str(v)).strip()
 TFIX={'อ.ธนณีย์':'อ.ธนนีย์','ครูใหม่ 1':'อ.สุพัชชา'}
+AFIX={'ครูใหม่ 1':'อ.สุพัชชา พลอยหวาน'}  # ชื่อครูที่ปรึกษา
 RFIX={'ทฐ2':'ทฐ 2','สปก':'สปก.'}
 # ห้องที่ไม่มีใน Excel (ยืนยันโดยครู): (id ห้อง, วัน 0=จ.., รหัสวิชา) -> ห้อง
 ROOM_OVERRIDE={('v1-5',1,'20000-1102'):'741',('v1-5',4,'20104-2013'):'825'}
@@ -25,7 +26,7 @@ for ws in wb.worksheets[1:]:
     if 'ทวิ' in title or 'ทวิ' in ws.title: tags.append('ทวิภาคี')
     if 'กสศ' in title or 'กสศ' in ws.title: tags.append('กสศ.')
     lunch=next(c for c in range(4,15) if 'พักรับประทาน' in s(ws.cell(H+3,c).value))
-    advisor=s(ws.cell(H+5,16).value); advisor=TFIX.get(advisor,advisor)
+    advisor=s(ws.cell(H+5,16).value); advisor=AFIX.get(advisor,TFIX.get(advisor,advisor))
     subj={};order=[]
     r=H+7
     while r<H+30:
