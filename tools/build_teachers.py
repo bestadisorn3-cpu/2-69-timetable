@@ -6,6 +6,8 @@ s=lambda v:'' if v is None else re.sub(r'\s+',' ',str(v)).strip()
 wb=openpyxl.load_workbook(sys.argv[1]); out=sys.argv[2]
 src=open(out).read(); T=json.loads(src[src.index('{'):src.rindex('}')+1])
 SKIP={'ตรวจสอบยอดนักเรียน'}
+# คาบที่เพิ่มเอง (ไม่มีในไฟล์ Excel) — d: 0=จ. 1=อ. 2=พ. 3=พฤ. 4=ศ.
+MANUAL={'อ.ชนานาถ':[dict(d=3,c='20100-1005',p=[5,6,7,8],r=[],n='งานไฟฟ้าและอิเล็กทรอนิกส์เบื้องต้น',l='ชย.1/1')]}
 teachers=[];log=[]
 for ws in wb.worksheets:
   if ws.title in SKIP: continue
@@ -38,6 +40,7 @@ for ws in wb.worksheets:
       lab=re.sub(r'\s*\(\d+\)\s*$','',lab)
       extra.append(dict(d=d,c=code,p=ps,r=g['rooms'],n=subj.get(code,g['name']),l=lab))
       log.append((key,d,code,ps,lab,g['rooms']))
+  extra+=MANUAL.get(key,[])
   teachers.append(dict(k=key,full=full,x=extra))
 T['teachers']=teachers
 open(out,'w').write('window.TT='+json.dumps(T,ensure_ascii=False,separators=(',',':'))+';\n')
