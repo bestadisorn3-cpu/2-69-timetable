@@ -14,11 +14,13 @@ def norm(x):
   for a,b in ALIAS: x=x.replace(a,b)
   return x
 classes=[];issues=[]
-for ws in wb.worksheets[1:]:
+for ws in wb.worksheets:
+  if 'ฟอร์ม' in ws.title: continue
   heads=[c for row in ws.iter_rows() for c in row if isinstance(c.value,str) and 'ตารางชั้นเรียน' in c.value]
   for h in heads:
     H=h.row; title=s(h.value)
     m=re.search(r'(ปวช|ปวส)\.\s*(\d)/(\d+)',title)
+    if not m: continue
     level,year,room=m.group(1),int(m.group(2)),int(m.group(3))
     g=re.search(r'กลุ่ม\s*(\d+)',title); group=int(g.group(1)) if g else None
     n=re.findall(r'\((\d+)\)',title); students=int(n[-1]) if n else None

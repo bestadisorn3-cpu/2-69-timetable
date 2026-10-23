@@ -23,3 +23,12 @@ python tools/build_data.py "ตารางเรียน.xlsx" data.js
 python tools/build_teachers.py "ตารางสอนรายบุคคล.xlsx" data.js
 ```
 สคริปต์จะสร้าง `data.js` ใหม่ และพิมพ์รายการที่ควรตรวจ (ชั่วโมงไม่ตรง ท+ป, ห้องว่าง ฯลฯ) จากนั้นอัปโหลด `data.js` ทับไฟล์เดิมใน repo
+
+## Block Course (สัปดาห์ที่ 16–18 · ปวส.1)
+ข้อมูลแยกจากภาคปกติ อยู่ในไฟล์ `data-bc.js` เปิดดูได้ที่ปุ่ม "Block Course" หรือลิงก์ `.../#/bc` (รายห้อง `.../#/bc/class/s1-4`)
+```
+python tools/build_data.py "ตารางเรียน BC.xlsx" data-bc.js
+python tools/build_teachers.py "ตารางสอน BC.xlsx" data-bc.js
+python tools/finalize_bc.py data-bc.js
+```
+แล้วเปลี่ยนเลข `data-bc.js?v=` ใน `index.html` ก่อนอัปโหลด

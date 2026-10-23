@@ -47,6 +47,11 @@ button{font:inherit;color:inherit;cursor:pointer}
 .seg button[aria-pressed="true"]{background:var(--card);color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.08)}
 
 /* ---------- picker ---------- */
+.prog{display:flex;align-items:center;gap:14px;margin:14px 0 0;flex-wrap:wrap}
+.prognote{font-size:13px;color:var(--muted);line-height:1.45}
+.prognote b{color:var(--ink);font-weight:500}
+body.bc .prog .seg button[aria-pressed="true"]{background:var(--navy);color:#fff}
+.bcbadge{display:inline-block;font-size:11px;font-weight:500;background:var(--navy);color:#fff;border-radius:999px;padding:1px 9px;margin-left:6px;vertical-align:2px;letter-spacing:0}
 .picker{margin:14px 0 18px;background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:6px 20px}
 .prow{display:flex;gap:18px;align-items:flex-start;padding:14px 0;border-top:1px solid var(--line2)}
 .prow:first-child,.summary + .prow{border-top:0}
@@ -216,6 +221,9 @@ body.exporting .list .dname small{display:none}
   .brand p{font-size:12px}
   .top .seg{width:100%}
   .top .seg button{flex:1}
+  .prog .seg{width:100%}
+  .prog .seg button{flex:1}
+  .prog{gap:8px}
   .picker{padding:4px 14px}
   .prow{flex-direction:column;gap:8px;padding:12px 0}
   .plabel{width:auto;padding-top:0}
@@ -275,6 +283,13 @@ body.exporting .list .dname small{display:none}
 </header>
 
 <main class="wrap">
+  <div class="prog" id="prog">
+    <div class="seg" role="group" aria-label="ภาคการเรียน">
+      <button data-prog="reg" aria-pressed="true">ภาคปกติ</button>
+      <button data-prog="bc" aria-pressed="false">Block Course</button>
+    </div>
+    <div class="prognote" id="prognote"></div>
+  </div>
   <section class="picker" id="picker"></section>
   <div class="now" id="now"></div>
   <section id="out"></section>
@@ -285,10 +300,19 @@ body.exporting .list .dname small{display:none}
 <div class="toast" id="toast"></div>
 
 <script src="data.js?v=20261023b"></script>
+<script src="data-bc.js?v=20261023a"></script>
 <script src="assets/html2canvas.min.js" defer></script>
 <script>
 (function(){
-const T=window.TT;
+// ภาคการเรียน: ภาคปกติ (reg) หรือ Block Course (bc) — ข้อมูลแยกกัน
+const progOf=hash=>/^#\/bc(\/|$)/.test(hash)?'bc':'reg';
+const store0={get(k){try{return localStorage.getItem(k)}catch(e){return null}}};
+const PROG = location.hash ? progOf(location.hash) : (window.TT_BC && store0.get('tt.prog')==='bc' ? 'bc' : 'reg');
+const T = PROG==='bc' && window.TT_BC ? window.TT_BC : window.TT;
+const IS_BC = T===window.TT_BC;
+const PFX = IS_BC ? '#/bc/' : '#/';
+const LASTKEY = IS_BC ? 'tt.last.bc' : 'tt.last';
+const BCLABEL = 'Block Course · สัปดาห์ที่ '+((window.TT_BC&&window.TT_BC.weeks)||'16–18');
 const DAYS=['จันทร์','อังคาร','พุธ','พฤหัสบดี','ศุกร์'];
 const DSHORT=['จ.','อ.','พ.','พฤ.','ศ.'];
 const DCOLOR=['#E2B53A','#E58FB0','#4E9C68','#E07B39','#4A74C9'];
@@ -301,6 +325,18 @@ const hm=m=>String(Math.floor(m/60)).padStart(2,'0')+':'+String(m%60).padStart(2
 const cat=code=>{const [a,b]=(code||'').split('-'); if(!b) return 'voc'; const k=a.slice(1); if(k==='0000') return b[0]==='2'?'act':'core'; if(k==='0001') return 'core'; return 'voc';};
 const store={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
 $('#term').textContent=T.term; $('#term2').textContent=T.term;
+document.body.classList.toggle('bc',IS_BC);
+store.set('tt.prog',IS_BC?'bc':'reg');
+document.querySelectorAll('[data-prog]').forEach(b=>{
+  b.setAttribute('aria-pressed', (b.dataset.prog==='bc')===IS_BC);
+  b.onclick=()=>{ const to=b.dataset.prog; if((to==='bc')===IS_BC) return;
+    const last=store.get(to==='bc'?'tt.last.bc':'tt.last');
+    location.hash = last || (to==='bc'?'#/bc':'#/'); store.set('tt.prog',to); location.reload(); };
+});
+if(!window.TT_BC) $('#prog').style.display='none';
+$('#prognote').innerHTML = IS_BC
+  ? `<b>${esc(BCLABEL)}</b> · ${esc(T.note||'ปวส.1 เรียนหลังจบภาคปกติ (ปวส. 15 สัปดาห์)')}`
+  : `ภาคปกติ · ปวช. 18 สัปดาห์ · ปวส. 15 สัปดาห์`;
 
 const classes=T.classes;
 const byId=Object.fromEntries(classes.map(c=>[c.id,c]));
@@ -333,7 +369,7 @@ const curClass=()=>{
 };
 
 function setFromHash(){
-  const h=decodeURIComponent(location.hash.replace(/^#\/?/,''));
+  const h=decodeURIComponent(location.hash.replace(/^#\/?/,'').replace(/^bc\/?/,''));
   let m;
   if((m=h.match(/^class\/(.+)$/)) && byId[m[1]]){
     const c=byId[m[1]]; Object.assign(st,{mode:'student',level:c.level,year:c.year,room:c.room,group:c.group,pickerOpen:false}); return true;
@@ -346,24 +382,27 @@ function setFromHash(){
 function writeHash(){
   let h='';
   const c=curClass();
-  if(st.mode==='student'&&c) h='#/class/'+c.id;
-  if(st.mode==='teacher'&&st.teacher) h='#/teacher/'+encodeURIComponent(st.teacher);
+  if(st.mode==='student'&&c) h=PFX+'class/'+c.id;
+  if(st.mode==='teacher'&&st.teacher) h=PFX+'teacher/'+encodeURIComponent(st.teacher);
   if(h && location.hash!==h) history.replaceState(null,'',h);
-  if(!h && location.hash) history.replaceState(null,'',location.pathname+location.search);
-  if(h) store.set('tt.last',h);
+  if(!h){ const home=IS_BC?'#/bc':''; if(location.hash!==home) history.replaceState(null,'',location.pathname+location.search+home); }
+  if(h) store.set(LASTKEY,h);
 }
 
 // ---------- picker ----------
 function chip(label,pressed,attrs,small,cls=''){
   return `<button class="chip ${cls}" aria-pressed="${pressed}" ${attrs}>${esc(label)}${small?`<small>${esc(small)}</small>`:''}</button>`;
 }
+const LEVELS=['ปวช.','ปวส.'].filter(l=>classes.some(c=>c.level===l));
 function renderPicker(){
+  if(st.mode==='student'&&!st.level&&LEVELS.length===1) st.level=LEVELS[0];
+  if(st.mode==='student'&&st.level&&!st.year){ const ys=[...new Set(classes.filter(c=>c.level===st.level).map(c=>c.year))]; if(ys.length===1) st.year=ys[0]; }
   const p=$('#picker');
   let h='';
   if(st.mode==='student'){
     const c=curClass();
     h+=`<div class="summary"><div><b>${c?esc(clsLabel(c)):''}</b> <span>${c?esc(c.tags.join(' · ')):''}</span></div><button data-act="open">เปลี่ยนห้อง</button></div>`;
-    h+=`<div class="prow"><div class="plabel">ระดับชั้น</div><div class="chips">${['ปวช.','ปวส.'].map(l=>chip(l,st.level===l,`data-level="${l}"`,l==='ปวช.'?'ประกาศนียบัตรวิชาชีพ':'ประกาศนียบัตรวิชาชีพชั้นสูง')).join('')}</div></div>`;
+    h+=`<div class="prow"><div class="plabel">ระดับชั้น</div><div class="chips">${LEVELS.map(l=>chip(l,st.level===l,`data-level="${l}"`,l==='ปวช.'?'ประกาศนียบัตรวิชาชีพ':'ประกาศนียบัตรวิชาชีพชั้นสูง')).join('')}</div></div>`;
     if(st.level){
       const years=[...new Set(classes.filter(c=>c.level===st.level).map(c=>c.year))].sort();
       h+=`<div class="prow"><div class="plabel">ชั้นปี</div><div class="chips">${years.map(y=>chip(st.level+y,st.year===y,`data-year="${y}"`,'','num')).join('')}</div></div>`;
@@ -410,8 +449,8 @@ function setMode(m){
 $('#home').onclick=e=>{
   e.preventDefault();
   Object.assign(st,{mode:'student',level:null,year:null,room:null,group:null,teacher:null,q:'',pickerOpen:true});
-  store.set('tt.last','');
-  history.replaceState(null,'',location.pathname);
+  store.set(LASTKEY,'');
+  history.replaceState(null,'',location.pathname+(IS_BC?'#/bc':''));
   $('#mStudent').setAttribute('aria-pressed','true'); $('#mTeacher').setAttribute('aria-pressed','false');
   update(); window.scrollTo({top:0,behavior:'smooth'});
 };
@@ -453,6 +492,7 @@ const timeRange=ps=>{const s=[...ps].sort((a,b)=>a-b);return hm(pStart(s[0]))+'�
 
 // ---------- now ----------
 function nowInfo(){
+  if(IS_BC) return {wd:-1,period:null,mins:0}; // Block Course ไม่ระบุวันที่ จึงไม่ไฮไลต์ 'ตอนนี้/วันนี้'
   const d=new Date(); const wd=d.getDay()-1; const mins=d.getHours()*60+d.getMinutes();
   let period=null; if(mins>=pStart(1)&&mins<pEnd(11)) period=Math.floor((mins-pStart(1))/60)+1;
   return {wd:(wd>=0&&wd<5)?wd:-1,period,mins};
@@ -529,7 +569,7 @@ function update(scroll){
   else if(st.teacher){ ctx={kind:'teacher',t:st.teacher,items:teacherItems(st.teacher),lunch:null}; }
   if(!ctx){
     nowEl.classList.remove('on');
-    out.innerHTML=`<div class="empty"><img src="logo.png" alt=""><h2>${st.mode==='student'?'เลือกห้องเรียนของคุณ':'เลือกชื่อครูผู้สอน'}</h2><div>${st.mode==='student'?'เลือกระดับชั้น ชั้นปี ห้อง และกลุ่ม (เฉพาะ ปวช.3) เพื่อดูตารางเรียน':'แตะชื่อครูเพื่อดูตารางสอนรายสัปดาห์'}</div></div>`;
+    out.innerHTML=`<div class="empty"><img src="logo.png" alt=""><h2>${st.mode==='student'?'เลือกห้องเรียนของคุณ':'เลือกชื่อครูผู้สอน'}</h2><div>${st.mode==='student'?(IS_BC?'Block Course มีเฉพาะ ปวส.1 ห้อง 1/4–1/8 · เลือกห้องเพื่อดูตาราง':'เลือกระดับชั้น ชั้นปี ห้อง และกลุ่ม (เฉพาะ ปวช.3) เพื่อดูตารางเรียน'):'แตะชื่อครูเพื่อดูตารางสอนรายสัปดาห์'}</div></div>`;
     return;
   }
   ITEMS=ctx.items;
@@ -547,18 +587,18 @@ function update(scroll){
   let head, sub;
   if(ctx.kind==='class'){
     const c=ctx.c;
-    head=`<div class="eyebrow">ตารางเรียน · ภาคเรียนที่ ${esc(T.term)}</div>
+    head=`<div class="eyebrow">ตารางเรียน${IS_BC?' '+esc(BCLABEL):''} · ภาคเรียนที่ ${esc(T.term)}</div>
       <h2>${esc(c.level)} ${c.year}/${c.room}${c.group?`<em>กลุ่ม ${c.group}</em>`:''}${c.tags.length?`<span class="tags">${c.tags.map(t=>`<span class="tag">${esc(t)}</span>`).join('')}</span>`:''}</h2>`;
     sub=`<div>ครูที่ปรึกษา <b>${esc(c.advisor||'—')}</b></div><div>นักเรียน <b>${c.students??'—'}</b> คน · สาขาวิชาช่างไฟฟ้า</div>`;
   }else{
     const totalP=ITEMS.reduce((a,it)=>a+it.p.length,0);
     const nCls=new Set(ITEMS.flatMap(it=>it.cls.length?it.cls.map(c=>c.id):[it.ctx])).size;
-    head=`<div class="eyebrow">ตารางสอน · ภาคเรียนที่ ${esc(T.term)}${tFull[ctx.t]&&!/^ครูใหม่/.test(tFull[ctx.t])?' · '+esc(tFull[ctx.t]):''}</div><h2>${esc(ctx.t)}</h2>`;
+    head=`<div class="eyebrow">ตารางสอน${IS_BC?' '+esc(BCLABEL):''} · ภาคเรียนที่ ${esc(T.term)}${tFull[ctx.t]&&!/^ครูใหม่/.test(tFull[ctx.t])?' · '+esc(tFull[ctx.t]):''}</div><h2>${esc(ctx.t)}</h2>`;
     sub=`<div>สอน <b>${totalP}</b> คาบ/สัปดาห์</div><div><b>${nCls}</b> ห้อง/กลุ่ม · ${new Set(ITEMS.map(i=>i.code)).size} รายวิชา</div>`;
   }
   const body = view==='list' ? renderList(ITEMS,{today:n.wd,now:n}) : `<div class="gridwrap">${renderGrid(ITEMS,{compact,lunch:ctx.lunch,today:n.wd,now:n})}</div>${compact?'<div class="hint">เลื่อนตารางไปทางขวา หรือหมุนจอแนวนอนเพื่อดูครบ · กด “บันทึกเป็นรูปภาพ” ได้ตารางเต็ม</div>':''}`;
   const cats=[...new Set(ITEMS.map(i=>i.cat))];
-  const fname = ctx.kind==='class' ? `ตารางเรียน-${ctx.c.level}${ctx.c.year}-${ctx.c.room}${ctx.c.group?'-กลุ่ม'+ctx.c.group:''}` : `ตารางสอน-${ctx.t}`;
+  const fname = (IS_BC?'BlockCourse-':'') + (ctx.kind==='class' ? `ตารางเรียน-${ctx.c.level}${ctx.c.year}-${ctx.c.room}${ctx.c.group?'-กลุ่ม'+ctx.c.group:''}` : `ตารางสอน-${ctx.t}`);
   out.innerHTML=`
   <div class="tools">
     <div class="seg" role="group" aria-label="รูปแบบ">
@@ -665,11 +705,11 @@ function showImagePreview(blob,name,dataUrl){
 // ---------- init ----------
 st.view=store.get('tt.view')||null;
 if(!setFromHash()){
-  const last=store.get('tt.last'); if(last){ history.replaceState(null,'',last); setFromHash(); }
+  const last=store.get(LASTKEY); if(last && progOf(last)===(IS_BC?'bc':'reg')){ history.replaceState(null,'',last); setFromHash(); }
 }
 $('#mStudent').setAttribute('aria-pressed',st.mode==='student'); $('#mTeacher').setAttribute('aria-pressed',st.mode==='teacher');
 update();
-window.addEventListener('hashchange',()=>{ if(setFromHash()) { $('#mStudent').setAttribute('aria-pressed',st.mode==='student'); $('#mTeacher').setAttribute('aria-pressed',st.mode==='teacher'); update(); } });
+window.addEventListener('hashchange',()=>{ if(progOf(location.hash)!==(IS_BC?'bc':'reg') && location.hash){ location.reload(); return; } if(setFromHash()) { $('#mStudent').setAttribute('aria-pressed',st.mode==='student'); $('#mTeacher').setAttribute('aria-pressed',st.mode==='teacher'); update(); } });
 let lastPhone=isPhone(); window.addEventListener('resize',()=>{ if(isPhone()!==lastPhone){ lastPhone=isPhone(); update(); } });
 setInterval(()=>{ if(!saving && !document.querySelector('dialog[open]') && document.activeElement?.id!=='tq') update(); },60000);
 })();

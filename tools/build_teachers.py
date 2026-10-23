@@ -5,7 +5,7 @@ CODE=re.compile(r'^\d{5}-\d{4}$')
 s=lambda v:'' if v is None else re.sub(r'\s+',' ',str(v)).strip()
 wb=openpyxl.load_workbook(sys.argv[1]); out=sys.argv[2]
 src=open(out).read(); T=json.loads(src[src.index('{'):src.rindex('}')+1])
-SKIP={'ตรวจสอบยอดนักเรียน'}
+SKIP={'ตรวจสอบยอดนักเรียน','ฟอร์ม'}
 RENAME={'ครูใหม่ 1':('อ.สุพัชชา','สุพัชชา พลอยแหวน'),'ครูใหม่ 2':('อ.พีรพัฒน์','พีรพัฒน์ เพชรสวัสดิ์')}  # ชื่อชีตเดิม -> ชื่อที่ใช้บนเว็บ
 # คาบที่เพิ่มเอง (ไม่มีในไฟล์ Excel) — d: 0=จ. 1=อ. 2=พ. 3=พฤ. 4=ศ.
 MANUAL={}
